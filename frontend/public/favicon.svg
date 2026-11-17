@@ -1,0 +1,26 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="14" fill="#101713" />
+  <rect x="1" y="1" width="62" height="62" rx="13" stroke="#274033" stroke-width="1.5" />
+  <g transform="translate(6, 6) scale(0.81)">
+    <defs>
+      <linearGradient id="fav-em" x1="12" y1="8" x2="48" y2="36" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#A1E9C9" />
+        <stop offset="50%" stop-color="#42D6A4" />
+        <stop offset="100%" stop-color="#1D8E6C" />
+      </linearGradient>
+      <linearGradient id="fav-champ" x1="52" y1="20" x2="20" y2="56" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#E5D2A8" />
+        <stop offset="50%" stop-color="#C9A96E" />
+        <stop offset="100%" stop-color="#8F713B" />
+      </linearGradient>
+    </defs>
+    <path d="M32 6L48 15.2V27.5L38.4 22L32 18.3L25.6 22L16 16.5L32 6Z" fill="url(#fav-em)" />
+    <path d="M16 16.5L25.6 22V34.5L16 40V16.5Z" fill="url(#fav-em)" fill-opacity="0.9" />
+    <path d="M48 15.2L48 40L38.4 45.5L38.4 33.2L48 27.5V15.2Z" fill="url(#fav-em)" />
+    <path d="M48 40L32 49.2L38.4 53L48 47.5L54 44L48 40Z" fill="url(#fav-champ)" fill-opacity="0.9" />
+    <path d="M32 49.2L16 40L21.6 36.8L32 42.8L42.4 36.8L42.4 43.2L32 49.2Z" fill="url(#fav-champ)" />
+    <path d="M32 58L16 48.8L21.6 45.6L32 51.6L42.4 45.6L48 48.8L32 58Z" fill="url(#fav-em)" fill-opacity="0.85" />
+    <polygon points="32,27 37,30 37,36 32,39 27,36 27,30" fill="#E8E6DD" />
+    <circle cx="32" cy="33" r="2.2" fill="#42D6A4" />
+  </g>
+</svg>

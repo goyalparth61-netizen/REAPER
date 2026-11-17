@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # REAPER FastAPI Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reaper_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql+psycopg2://reaper:reaper_secure_pass_2026@postgres:5432/reaper_db
+      - REDIS_URL=redis://redis:6379/0
+      - FRONTEND_ORIGIN=http://localhost:5173
+      - ENABLE_GITHUB_INTEGRATION=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - reaper_net
+
+  # Celery Background Worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reaper_worker
+    restart: always
+    command: ["celery", "-A", "app.tasks.celery_app.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://reaper:reaper_secure_pass_2026@postgres:5432/reaper_db
+      - REDIS_URL=redis://redis:6379/0
+      - ENABLE_GITHUB_INTEGRATION=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - reaper_net
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: reaper_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: reaper
+      POSTGRES_PASSWORD: reaper_secure_pass_2026
+      POSTGRES_DB: reaper_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reaper -d reaper_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reaper_net
+
+  # Redis Broker
+  redis:
+    image: redis:7-alpine
+    container_name: reaper_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reaper_net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  reaper_net:
+    driver: bridge

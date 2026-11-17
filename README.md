@@ -1,373 +1,280 @@
+<p align="center">
+  <img src="public/branding/reaper-logo.png" width="190" alt="REAPER Autonomous Software Repair Engine" />
+</p>
 
-# ⚡ REAPER — Autonomous Software Repair Engine
+<h1 align="center">REAPER</h1>
+<h3 align="center">Autonomous Software Repair Engine</h3>
 
 <p align="center">
-  <strong>Detect. Diagnose. Repair. Verify.</strong>
+  <em>"Your Code Breaks. REAPER Fixes."</em>
 </p>
 
 <p align="center">
-  An AI-powered autonomous software repair engine that detects CI/CD failures, investigates root causes, generates intelligent code fixes, and validates patches in isolated environments.
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/AI-Powered-42D6A4?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Python-FastAPI-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Docker-Isolated%20Testing-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/Status-In%20Development-orange?style=for-the-badge" />
+  <a href="#system-architecture"><img src="https://img.shields.io/badge/Architecture-Multi--Agent-42D6A4?style=for-the-badge" alt="Architecture"></a>
+  <a href="#tech-stack"><img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-1D3026?style=for-the-badge&logo=react" alt="Frontend"></a>
+  <a href="#tech-stack"><img src="https://img.shields.io/badge/Backend-FastAPI%20%2B%20Python-101713?style=for-the-badge&logo=fastapi" alt="Backend"></a>
+  <a href="#tech-stack"><img src="https://img.shields.io/badge/Security-Docker%20Sandbox-C9A96E?style=for-the-badge&logo=docker" alt="Docker"></a>
+  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License"></a>
 </p>
 
 ---
 
-## 🚀 Overview
+## ⚡ Executive Summary
 
-Modern software development depends on CI/CD pipelines, automated testing, and continuous integration. However, when builds fail, developers often spend hours manually investigating logs, locating bugs, modifying source code, and validating fixes.
+**REAPER** is an autonomous, multi-agent AI software repair platform engineered to eliminate debugging downtime. When software pipelines break, REAPER automatically ingests failure reports, reproduces bugs in isolated sandboxes, localizes faults down to exact lines of code, synthesizes verified semantic patches, runs full regression suites, and drafts ready-to-merge Pull Requests.
 
-**REAPER (Autonomous Software Repair Engine)** aims to automate this entire debugging and repair workflow.
+Designed with an **Obsidian Emerald** visual identity, REAPER pairs an interactive, high-cadence developer dashboard with an asynchronous, high-throughput Python backend.
 
-REAPER uses AI-powered analysis and autonomous agents to understand software failures, identify root causes, generate code modifications, and test patches in isolated Docker environments.
+---
 
-Instead of simply reporting errors, REAPER aims to help developers move from failure to a verified solution.
+## 🎯 Problem & Solution
 
-## 🎯 Problem Statement
+### The Problem
+Modern engineering teams spend up to 40% of development cycles investigating continuous integration failures, sifting through massive stack traces, and manually constructing hotfixes. Traditional linters and telemetry tools flag errors, but leave manual root cause isolation, patch development, and verification entirely to the developer.
 
-Software development teams frequently face challenges such as:
-
-- Repeated CI/CD pipeline failures.
-- Time-consuming manual debugging.
-- Difficulty identifying root causes from large error logs.
-- Dependency and configuration conflicts.
-- Manual code patching and regression testing.
-- Delayed development cycles due to repetitive repair tasks.
-
-Traditional debugging tools often identify problems but leave the actual repair process to developers.
-
-REAPER aims to bridge this gap through autonomous software diagnosis and repair.
-
-## 💡 Our Solution
-
-REAPER introduces an AI-driven software repair workflow that:
-
-1. Detects failed CI/CD builds.
-2. Collects relevant logs and source-code context.
-3. Analyses errors and identifies possible root causes.
-4. Generates context-aware code patches.
-5. Reviews proposed changes.
-6. Tests patches in isolated Docker environments.
-7. Produces detailed repair reports.
-8. Prepares GitHub Pull Requests for human review.
-
-**Human approval remains mandatory before accepting changes.**
-
-## ⚙️ How REAPER Works
+### The Solution: Autonomous Repair Workflow
+REAPER bridges the gap between failure detection and verified resolution:
+1. **Ingests** broken CI/CD runs, stack traces, and bug reports.
+2. **Reproduces** failure scenarios deterministically in sandboxed runtimes.
+3. **Pinpoints** buggy AST statements via Spectrum-Based Fault Localization (SBFL).
+4. **Synthesizes** surgical, idiomatic patches using multi-model AI reasoning.
+5. **Validates** fixes against isolated test boundaries and runs regression suites.
+6. **Publishes** human-auditable Pull Requests with detailed diagnosis and logs.
 
 ```mermaid
 flowchart TD
-    A["CI/CD Build Failure"] --> B["Failure Detection"]
-    B --> C["Log & Source Analysis"]
-    C --> D["Root Cause Diagnosis"]
-    D --> E["AI Patch Generation"]
-    E --> F["Patch Review"]
-    F --> G["Docker Sandbox Testing"]
-    G --> H{"Tests Passed?"}
-    H -->|No| I["Analyse Test Failure"]
-    I --> E
-    H -->|Yes| J["Generate Repair Report"]
-    J --> K["Create GitHub Pull Request"]
-    K --> L["Human Review & Approval"]
+    A["CI/CD Build Failure / Bug Report"] --> B["Failure Ingestion & Setup"]
+    B --> C["Deterministic Failure Reproduction"]
+    C --> D["Fault Localization (SBFL + AST)"]
+    D --> E["Context-Aware Patch Synthesis"]
+    E --> F["Patch Verification in Docker Sandbox"]
+    F --> G{"Target Tests Pass?"}
+    G -->|No| H["Feedback Analysis & Re-synthesis"]
+    H --> E
+    G -->|Yes| I["Project Regression Testing"]
+    I --> J{"Regressions?"}
+    J -->|Yes| H
+    J -->|No| K["Candidate Ranking & PR Generation"]
+    K --> L["Ready-to-Merge Pull Request"]
 ```
-
-## 🧠 Core Features
-
-### 1. AI-Powered Error Analysis
-
-- Analyse CI/CD failure logs.
-- Understand stack traces and error messages.
-- Identify potential root causes.
-- Provide understandable explanations.
-
-### 2. Autonomous Code Repair
-
-- Generate context-aware patches.
-- Suggest modifications across relevant files.
-- Review generated changes.
-- Track repair attempts.
-
-### 3. Multi-Model AI Architecture
-
-Designed to support multiple AI providers:
-
-| Provider | Intended Responsibility |
-|---|---|
-| Google Gemini | Log analysis and code understanding |
-| OpenAI GPT | Independent reasoning and patch review |
-| Anthropic Claude | Complex bug diagnosis and repair |
-
-A centralized AI orchestrator selects providers according to task requirements.
-
-### 4. Isolated Docker Testing
-
-- Execute tests in isolated containers.
-- Apply resource limits.
-- Enforce execution timeouts.
-- Capture test output.
-- Validate generated patches before acceptance.
-
-### 5. GitHub Integration
-
-Planned capabilities include:
-
-- Repository access.
-- CI/CD workflow monitoring.
-- Failed build log retrieval.
-- Branch and commit creation.
-- Pull Request generation.
-- Repair status tracking.
-
-### 6. Repair History & Reports
-
-- Track previous repair attempts.
-- Store diagnosis results.
-- Display generated patches.
-- Record test outcomes.
-- Generate repair reports.
-
-### 7. Security & Human Oversight
-
-- Secure authentication.
-- Protected API endpoints.
-- Isolated code execution.
-- Audit logging.
-- Human approval before accepting changes.
-- No automatic production merges.
-
-## 🏗️ Technology Stack
-
-| Category | Technologies |
-|---|---|
-| Frontend | React.js, Vite, JavaScript |
-| Backend | Python, FastAPI |
-| Database | PostgreSQL, Supabase |
-| ORM | SQLAlchemy |
-| AI Models | Gemini, OpenAI GPT, Claude |
-| Background Jobs | Redis, Celery |
-| Code Isolation | Docker |
-| Version Control | Git, GitHub |
-| Testing | Pytest |
-
-*The stack represents the planned architecture. Individual integrations depend on implementation and configuration.*
-
-## 📂 Project Structure
-
-```text
-REAPER/
-│
-├── frontend/
-│   ├── public/
-│   │   └── branding/
-│   └── src/
-│       ├── components/
-│       ├── pages/
-│       ├── services/
-│       ├── styles/
-│       └── App.jsx
-│
-├── backend/
-│   ├── app/
-│   │   ├── api/
-│   │   ├── agents/
-│   │   ├── core/
-│   │   ├── database/
-│   │   ├── integrations/
-│   │   ├── models/
-│   │   ├── sandbox/
-│   │   ├── schemas/
-│   │   ├── services/
-│   │   ├── tasks/
-│   │   └── main.py
-│   │
-│   ├── tests/
-│   ├── migrations/
-│   ├── requirements.txt
-│   └── .env.example
-│
-└── README.md
-```
-
-*The structure describes the intended organization and may evolve during development.*
-
-## 🛠️ Getting Started
-
-### Prerequisites
-
-Install the following tools:
-
-- Python 3.12+
-- Node.js and npm
-- Git
-- Docker Desktop
-- PostgreSQL or Supabase account
-
-### 1. Clone the Repository
-
-```bash
-git clone YOUR_REPOSITORY_URL
-cd REAPER
-```
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend development server:
-
-```text
-http://localhost:5173
-```
-
-### 3. Backend Setup
-
-Open another terminal:
-
-```bash
-cd backend
-python -m venv venv
-```
-
-Activate the environment on Windows:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Start FastAPI:
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
-
-Backend server:
-
-```text
-http://localhost:8000
-```
-
-API documentation:
-
-```text
-http://localhost:8000/docs
-```
-
-### 4. Environment Configuration
-
-Create a `.env` file inside the backend directory using `.env.example` as a reference.
-
-```env
-DATABASE_URL=
-
-JWT_SECRET_KEY=
-
-REDIS_URL=
-
-GEMINI_API_KEY=
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-
-SMTP_HOST=
-SMTP_PORT=
-SMTP_USERNAME=
-SMTP_PASSWORD=
-
-GITHUB_APP_ID=
-GITHUB_PRIVATE_KEY=
-GITHUB_WEBHOOK_SECRET=
-
-FRONTEND_ORIGIN=http://localhost:5173
-
-ENABLE_GITHUB_INTEGRATION=false
-```
-
-Never commit `.env` files or expose API keys publicly.
-
-### 5. Docker Setup
-
-Install and start Docker Desktop before running sandbox-related services.
-
-Use the project's Docker Compose configuration when the required services have been implemented and configured.
-
-## 🔐 Security Principles
-
-REAPER is designed around security-first software repair.
-
-- Treat repository files and build logs as untrusted input.
-- Never execute untrusted code directly on the backend host.
-- Use isolated, resource-limited execution environments.
-- Protect API credentials and secrets.
-- Validate AI-generated patches.
-- Maintain execution logs and audit trails.
-- Require human approval before accepting generated changes.
-
-## 🗺️ Development Roadmap
-
-- [x] Project concept and architecture planning
-- [x] Frontend project foundation
-- [x] REAPER brand identity
-- [ ] Email authentication integration
-- [ ] Database integration
-- [ ] Multi-provider AI orchestration
-- [ ] CI/CD failure detection
-- [ ] Automated root cause analysis
-- [ ] AI-powered patch generation
-- [ ] Docker sandbox integration
-- [ ] Automated patch validation
-- [ ] GitHub Pull Request integration
-- [ ] Repair analytics and reporting
-- [ ] End-to-end testing
-
-*Update roadmap items as features are actually implemented and verified.*
-
-## 👥 Team CiPher
-
-<p align="center">
-  <strong>Building Intelligent Systems. Engineering Autonomous Solutions.</strong>
-</p>
-
-### Team Members
-
-| Member | Specialization |
-|---|---|
-| **Archi Sharma** | AI/ML |
-| **Parth Goyal** | CSCQ |
-
-<p align="center">
-  <strong>Built by CiPher</strong><br/>
-  Engineering autonomous software repair.
-</p>
-
-## 🌟 Our Vision
-
-Our vision is to make software debugging and repair faster, more intelligent, and more accessible.
-
-REAPER aims to transform traditional debugging workflows into autonomous, AI-assisted engineering processes where developers spend less time investigating repetitive failures and more time building innovative software.
-
-## 📜 License
-
-This project is currently under development. A license will be added when the repository's licensing terms are finalized.
 
 ---
 
+## 🏛️ System Architecture
+
+```
+                                  +---------------------------------------+
+                                  |         REAPER Frontend (Vite)        |
+                                  |  - Obsidian Emerald Design System     |
+                                  |  - Real-time Pipeline Monitor         |
+                                  |  - Interactive Code Diff Viewer       |
+                                  +-------------------+-------------------+
+                                                      |
+                                        REST APIs / WebSockets
+                                                      |
+                                                      v
+                                  +---------------------------------------+
+                                  |          FastAPI Backend Core         |
+                                  |  - Dual-Token JWT Authentication      |
+                                  |  - SQLAlchemy 2.0 / Alembic           |
+                                  |  - PostgreSQL / Supabase Engine       |
+                                  +-------------------+-------------------+
+                                                      |
+                   +----------------------------------+----------------------------------+
+                   |                                                                     |
+                   v                                                                     v
++--------------------------------------+                              +--------------------------------------+
+|       Multi-Agent AI Repair Core     |                              |      Secure Execution Sandboxes      |
+|  1. Analysis Agent                   |                              |  - Docker Containerized Runners      |
+|  2. Fault Localization Agent         |                              |  - Isolated Subprocess Fallback      |
+|  3. Patch Generation Agent           |                              |  - Resource Quotas & Non-Root User   |
+|  4. Sandbox Execution Agent          |                              |  - Ephemeral Workspace Cleanup       |
+|  5. Regression Testing Agent         |                              +--------------------------------------+
+|  6. Pull Request Agent               |
++--------------------------------------+
+```
+
+---
+
+## 🤖 The 6 Specialized AI Repair Agents
+
+REAPER partitions the complex problem of automated program repair across six autonomous, specialized agents:
+
+1. **Analysis Agent**: Synthesizes stack traces, error telemetry, and commit histories to define reproduction steps and root symptoms.
+2. **Fault Localization Agent**: Combines Spectrum-Based Fault Localization (SBFL) with semantic AST analysis to identify suspect modules and lines.
+3. **Patch Generation Agent**: Generates candidate code diffs matching project conventions and language idioms using high-reasoning LLMs.
+4. **Sandbox Execution Agent**: Dispatches test runners inside isolated execution boundaries to confirm bug reproduction and patch efficacy.
+5. **Regression Testing Agent**: Runs full test suites to verify that bug fixes introduce zero regressions or side-effects.
+6. **Pull Request Agent**: Compiles comprehensive patch narratives, verification telemetry, and generates clean GitHub Pull Requests.
+
+---
+
+## 🔄 The 10-Stage Autonomous Repair Pipeline
+
+Every repair execution follows a deterministic, 10-stage state machine:
+
+```
+[1. INGESTION] ──────► [2. ENV SETUP] ──────► [3. REPRODUCE] ──────► [4. LOCALIZATION]
+                                                                              │
+                                                                              ▼
+[8. REGRESSION] ◄──── [7. VERIFY] ◄────────── [6. CANDIDATE] ◄─────── [5. CONTEXT]
+       │
+       ▼
+[9. RANKING] ───────► [10. PR GENERATION] ──► (Verified Fix Published)
+```
+
+1. **Ingestion**: Ingests repository metadata, issue descriptions, and target branches.
+2. **Environment Setup**: Provisions ephemeral workspace and resolves dependencies.
+3. **Failure Reproduction**: Replays failure commands to verify reproducibility.
+4. **Fault Localization**: Pinpoints suspect AST nodes and ranks suspect lines.
+5. **Context Gathering**: Gathers surrounding functions, dependencies, and type signatures.
+6. **Candidate Generation**: Synthesizes multiple candidate patches.
+7. **Sandbox Verification**: Executes target test cases against patched code.
+8. **Regression Testing**: Validates non-regression across all existing test suites.
+9. **Patch Ranking**: Selects the highest quality, most minimal working patch.
+10. **PR Generation**: Formats and publishes a ready-to-merge Pull Request.
+
+---
+
+## 🎨 Design System: "Obsidian Emerald"
+
+REAPER features an elite visual identity crafted for engineering clarity:
+
+- **Deep Obsidian** (`#101713`): Core background canvas.
+- **Dark Forest** (`#18251E`): Layered surface for cards and panes.
+- **Forest Surface** (`#1D3026`): Floating panels and elevated components.
+- **Emerald Accent** (`#42D6A4`): Primary actions, success indicators, and live telemetry.
+- **Soft Mint** (`#A1E9C9`): Secondary highlights and badges.
+- **Champagne Gold** (`#C9A96E`): Premium metrics, warnings, and special indicators.
+- **Warm Ivory** (`#E8E6DD`): High-legibility text hierarchy.
+- **Muted Sage** (`#89998E`): Low-contrast metadata and descriptions.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: React 18 with Vite
+- **Styling**: Tailwind CSS with custom Obsidian Emerald tokens
+- **Icons**: Lucide React + Custom SVG Brand System
+- **State & Routing**: Context API, React Hooks, Client Router
+
+### Backend
+- **Framework**: FastAPI (Python 3.12+)
+- **ORM & Migrations**: SQLAlchemy 2.0 (Async/Sync) with Alembic
+- **Database**: PostgreSQL / Supabase with SQLite local fallback
+- **Authentication**: JWT Dual-Token (Access + Refresh) & Argon2 Password Hashing
+- **Execution Sandboxing**: Docker SDK with process isolation fallback
+- **Test Suite**: Pytest with unit, integration, and mock suites
+
+---
+
+## 🚀 Quickstart Guide
+
+### 1. Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **Python**: v3.12 or higher
+- **Docker** (Optional, recommended for sandboxed test execution)
+- **Git**
+
+### 2. Clone Repository
+```bash
+git clone https://github.com/goyalparth61-netizen/REAPER.git
+cd REAPER
+```
+
+### 3. Backend Setup
+```bash
+cd backend
+
+# Create and activate virtual environment
+python -m venv venv
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+
+# Run database migrations
+alembic upgrade head
+
+# Run backend development server
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+API Documentation will be available at: `http://localhost:8000/docs`
+
+### 4. Frontend Setup
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start Vite development server
+npm run dev
+```
+Open your browser at: `http://localhost:5173`
+
+### 5. Running Tests
+```bash
+# Backend unit & integration test suite
+cd backend
+pytest tests/ -v
+
+# Frontend production build verification
+cd frontend
+npm run build
+```
+
+---
+
+## 🛡️ Security & Sandbox Principles
+
+- **Network Isolation**: Sandbox containers operate with strict network restrictions to prevent telemetry leakage.
+- **Zero Secrets Committed**: All environment configurations rely on `.env.example` templates; sensitive keys are strictly excluded via `.gitignore`.
+- **Resource Quotas**: Hard timeouts (default 30s) and CPU/memory quotas on execution runners prevent infinite loops and denial-of-service.
+- **Non-Root Execution**: Sandbox containers execute under unprivileged user IDs (`uid: 1000`).
+
+---
+
+## 🗺️ Project Implementation Status
+
+- [x] Multi-Agent Repair Architecture (6 specialized agents)
+- [x] 10-Stage Deterministic Repair State Machine
+- [x] Dual-Token JWT Authentication & Argon2 Password Hashing
+- [x] PostgreSQL & SQLAlchemy 2.0 ORM with Alembic Migrations
+- [x] Docker Containerized Sandbox Runner & Fallback Subprocess Runner
+- [x] Obsidian Emerald UI Design System & Live Animated Mascot
+- [x] RESTful API endpoints & WebSocket Telemetry Stream
+- [x] Comprehensive Automated Pytest Suite (17 tests passing)
+- [x] Mock GitHub Integration Service
+
+---
+
+## 👥 CiPher — Founding Team
+
+<div align="center">
+
+| Member | Specialization | Role |
+| :--- | :--- | :--- |
+| **1. Archi Sharma** | **AI / ML** | Neural Architecture & Multi-Agent Reasoning |
+| **2. Parth Goyal** | **CSCQ** | System Security, Architecture & Sandboxing |
+
+</div>
+
+<br>
+
 <p align="center">
-  <strong>REAPER — Detect. Diagnose. Repair. Verify.</strong>
-  <br/>
-  <sub>Powered by AI. Built for Developers. Created by CiPher.</sub>
+  <strong>Built by CiPher</strong><br>
+  <em>Engineering autonomous software repair.</em>
 </p>
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

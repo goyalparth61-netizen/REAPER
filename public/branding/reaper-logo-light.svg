@@ -1,0 +1,27 @@
+<svg width="240" height="48" viewBox="0 0 240 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logo-em-grad-lt" x1="8" y1="4" x2="36" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#42D6A4" />
+      <stop offset="100%" stop-color="#1D8E6C" />
+    </linearGradient>
+    <linearGradient id="logo-champ-grad-lt" x1="40" y1="12" x2="16" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C9A96E" />
+      <stop offset="100%" stop-color="#8F713B" />
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(4, 2) scale(0.68)">
+    <path d="M32 6L48 15.2V27.5L38.4 22L32 18.3L25.6 22L16 16.5L32 6Z" fill="url(#logo-em-grad-lt)" />
+    <path d="M16 16.5L25.6 22V34.5L16 40V16.5Z" fill="url(#logo-em-grad-lt)" fill-opacity="0.9" />
+    <path d="M48 15.2L48 40L38.4 45.5L38.4 33.2L48 27.5V15.2Z" fill="url(#logo-em-grad-lt)" />
+    <path d="M48 40L32 49.2L38.4 53L48 47.5L54 44L48 40Z" fill="url(#logo-champ-grad-lt)" fill-opacity="0.9" />
+    <path d="M32 49.2L16 40L21.6 36.8L32 42.8L42.4 36.8L42.4 43.2L32 49.2Z" fill="url(#logo-champ-grad-lt)" />
+    <path d="M32 58L16 48.8L21.6 45.6L32 51.6L42.4 45.6L48 48.8L32 58Z" fill="url(#logo-em-grad-lt)" fill-opacity="0.85" />
+    <polygon points="32,27 37,30 37,36 32,39 27,36 27,30" fill="#18251E" />
+    <circle cx="32" cy="33" r="2.2" fill="#42D6A4" />
+  </g>
+
+  <text x="56" y="27" font-family="'Inter', -apple-system, sans-serif" font-weight="900" font-size="20" letter-spacing="3" fill="#18251E">REAPER</text>
+  <text x="57" y="38" font-family="'Inter', -apple-system, sans-serif" font-weight="600" font-size="7.5" letter-spacing="2.2" fill="#89998E">AUTONOMOUS REPAIR ENGINE</text>
+  <circle cx="218" cy="23" r="3" fill="#42D6A4" />
+</svg>
