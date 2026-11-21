@@ -5,7 +5,8 @@ import {
   GitBranch,
   CheckCircle2,
   ArrowRight,
-  Terminal
+  Terminal,
+  AlertCircle
 } from "lucide-react";
 import ReaperMascotLogo from "./branding/ReaperMascotLogo";
 import { IconStartRepair, IconSafetyCenter } from "./icons/ReaperIcons";
@@ -21,19 +22,21 @@ export default function RepairConfirmModal({
 }) {
   const [dispatching, setDispatching] = useState(false);
   const [dispatchResult, setDispatchResult] = useState(null);
+  const [dispatchError, setDispatchError] = useState(null);
   const [stepIndex, setStepIndex] = useState(0);
 
   if (!isOpen || !repo) return null;
 
   async function handleConfirmRepair() {
     setDispatching(true);
+    setDispatchError(null);
     setStepIndex(1); // Preparing isolated environment
 
     try {
-      await new Promise((r) => setTimeout(r, 650));
+      await new Promise((r) => setTimeout(r, 400));
       setStepIndex(2); // Mounting repository snapshot
 
-      await new Promise((r) => setTimeout(r, 700));
+      await new Promise((r) => setTimeout(r, 400));
       setStepIndex(3); // Dispatching agent
 
       const result = await apiService.dispatchRepair({
@@ -43,38 +46,23 @@ export default function RepairConfirmModal({
         isDemo: repo.isDemo
       });
 
-      // Save to localStorage so History and Reports have immediate access
+      // Save real run to localStorage for immediate UI continuity
       try {
         const existing = JSON.parse(localStorage.getItem("reaper_recent_runs") || "[]");
         const newRun = {
-          runId: result.runId || `run-${Date.now().toString(36)}`,
+          runId: result.runId,
           repo: repo.fullName || repo.name,
           branch: branch || repo.defaultBranch || "main",
-          issue: issueDescription || "Runtime exception & failing assertion caught during execution.",
-          fixSummary: "Added defensive null-guard check and boundary fallback to prevent crashes.",
-          status: "Completed",
+          issue: issueDescription || "Runtime exception diagnosed in source code.",
+          status: result.status || "DISPATCHED",
           timestamp: new Date().toISOString()
         };
         localStorage.setItem("reaper_recent_runs", JSON.stringify([newRun, ...existing]));
       } catch {}
 
-      await new Promise((r) => setTimeout(r, 450));
       setDispatchResult(result);
-    } catch {
-      const fallbackRun = {
-        runId: `run-${Date.now().toString(36)}`,
-        status: "Completed",
-        repo: repo.fullName || repo.name,
-        branch: branch || "main",
-        issue: issueDescription || "Runtime exception diagnosed in source code.",
-        fixSummary: "Added defensive null-guard check and boundary fallback to prevent crashes.",
-        timestamp: new Date().toISOString()
-      };
-      try {
-        const existing = JSON.parse(localStorage.getItem("reaper_recent_runs") || "[]");
-        localStorage.setItem("reaper_recent_runs", JSON.stringify([fallbackRun, ...existing]));
-      } catch {}
-      setDispatchResult(fallbackRun);
+    } catch (err) {
+      setDispatchError(err.message || "Failed to reach backend engine.");
     } finally {
       setDispatching(false);
     }
@@ -83,6 +71,7 @@ export default function RepairConfirmModal({
   function handleClose() {
     if (dispatching) return;
     setDispatchResult(null);
+    setDispatchError(null);
     setStepIndex(0);
     onClose();
   }
@@ -110,6 +99,16 @@ export default function RepairConfirmModal({
         </div>
 
         <div className="modal-body">
+          {dispatchError && (
+            <div className="safety-alert-banner" style={{ background: "rgba(239, 68, 68, 0.15)", borderColor: "#EF4444", color: "#FCA5A5", padding: "12px 16px", borderRadius: 8, marginBottom: 16 }}>
+              <strong style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <AlertCircle size={16} />
+                Dispatch Failed
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "13px" }}>{dispatchError}</p>
+            </div>
+          )}
+
           {dispatchResult ? (
             /* Result State */
             <div className="dispatch-success-view">
@@ -124,7 +123,7 @@ export default function RepairConfirmModal({
               <div className="run-telemetry-badge">
                 <Terminal size={14} />
                 <span>Run ID: <code>{dispatchResult.runId}</code></span>
-                <span className="status-pill active">STATUS: ANALYSING</span>
+                <span className="status-pill active">STATUS: {dispatchResult.status || "ANALYSING"}</span>
               </div>
 
               <div className="active-pipeline-preview">
@@ -154,7 +153,7 @@ export default function RepairConfirmModal({
               <h4>Launching Autonomous Repair Sandbox</h4>
               <p className="loading-stage-text">
                 {stepIndex === 1 && "Provisioning network-isolated runner..."}
-                {stepIndex === 2 && `Mounting snapshot of ${repo.fullName}@${branch}...`}
+                {stepIndex === 2 && `Mounting snapshot of ${repo.fullName || repo.name}@${branch}...`}
                 {stepIndex === 3 && "Loading test suite & AST investigator..."}
               </p>
               <div className="progress-bar-wrap">

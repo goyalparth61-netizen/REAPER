@@ -1,0 +1,11 @@
+{
+  "name": "reaper-root",
+  "private": true,
+  "version": "1.0.0",
+  "description": "REAPER — Autonomous Software Repair Engine",
+  "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run dev"
+  }
+}

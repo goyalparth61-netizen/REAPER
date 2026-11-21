@@ -3,26 +3,27 @@ from app.agents.base_agent import BaseAgent, AgentOutput
 
 
 class TestAnalysisAgent(BaseAgent):
-    __test__ = False  # Prevent pytest from treating this agent class as a test suite
+    __test__ = False  # Prevent pytest from treating this agent as a test class
 
     def __init__(self):
         super().__init__("TestAnalysisAgent")
 
     def run(self, context: Dict[str, Any]) -> AgentOutput:
-        sandbox_res = context.get("sandbox_result", {})
-        exit_code = sandbox_res.get("exit_code", 0)
-        passed = sandbox_res.get("passed", exit_code == 0)
-        stdout = sandbox_res.get("stdout", "")
+        verification = context.get("verification") or context.get("sandbox_result") or {}
+        exit_code = verification.get("exit_code", 1)
+        passed = verification.get("verified", False) or verification.get("passed", False)
+        sandbox_available = verification.get("sandbox_available", False)
+
+        test_status = "PASSED" if (passed and sandbox_available) else ("UNVERIFIED_NO_DOCKER" if not sandbox_available else "FAILED")
 
         return AgentOutput(
             agent_name=self.name,
             confidence=0.97,
             data={
-                "regression_passed": passed,
+                "regression_passed": passed and sandbox_available,
                 "exit_code": exit_code,
-                "test_suite_status": "PASSED" if passed else "FAILED",
-                "flaky_tests_detected": 0,
-                "coverage_impact": "+0.4%",
-                "recommendation": "PROCEED_TO_PR" if passed else "RETRY_WITH_ALTERNATIVE_PATCH"
+                "test_suite_status": test_status,
+                "sandbox_available": sandbox_available,
+                "recommendation": "PROCEED_TO_PR" if (passed and sandbox_available) else "ABORT_OR_RETRY"
             }
         )

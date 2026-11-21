@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+import tempfile
+import shutil
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from app.database.session import get_db
 from app.repositories.repair_repo import RepairRepository
@@ -14,6 +17,7 @@ from app.schemas.repair import (
     RepairLogsResponse
 )
 from app.schemas.report import RepairReportResponse
+from app.utils.archive_validator import validate_and_extract_archive, ArchiveValidationError
 
 router = APIRouter(prefix="/repairs", tags=["Repairs"])
 
@@ -50,6 +54,65 @@ def create_repair(
     }
 
 
+@router.post("/upload", response_model=Dict[str, Any])
+async def upload_project_archive(
+    file: UploadFile = File(...),
+    repo_name: Optional[str] = Form("local/uploaded-project"),
+    branch: Optional[str] = Form("main"),
+    issue_description: Optional[str] = Form(""),
+    failure_logs: Optional[str] = Form(""),
+    current_user: User = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Ingest a local Python project archive (.zip, .tar.gz) for autonomous repair.
+    Validates against path traversal, oversized archives, and decompression attacks.
+    """
+    temp_dir = tempfile.mkdtemp(prefix="reaper_upload_")
+    archive_dest = os.path.join(temp_dir, file.filename or "archive.zip")
+    extract_dest = os.path.join(temp_dir, "extracted")
+
+    try:
+        # Save file to temporary path
+        with open(archive_dest, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Validate and extract safely
+        _, extracted_files = validate_and_extract_archive(archive_dest, extract_dest)
+
+        user_id = current_user.id if current_user else "usr-demo-01"
+        repo_db = RepairRepository(db)
+        job = repo_db.create_repair(
+            repo_name=repo_name,
+            branch=branch,
+            issue_description=issue_description or f"Local project archive repair ({len(extracted_files)} files)",
+            failure_logs=failure_logs,
+            user_id=user_id,
+            is_demo=False
+        )
+
+        # Trigger repair execution with the verified extracted workspace
+        from app.workflows.repair_orchestrator import RepairOrchestrator
+        orchestrator = RepairOrchestrator(db)
+        res = orchestrator.run_workflow_sync(job.id, workspace_dir=extract_dest)
+
+        return {
+            "runId": job.id,
+            "status": res.get("status", "DISPATCHED"),
+            "extracted_files_count": len(extracted_files),
+            "patch": res.get("patch"),
+            "report_id": res.get("report_id"),
+            "message": "Local archive analyzed and processed."
+        }
+
+    except ArchiveValidationError as ave:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ave))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Archive ingestion failed: {str(e)}")
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+
 @router.get("", response_model=List[Dict[str, Any]])
 def list_repairs(
     current_user: User = Depends(get_optional_current_user),
@@ -59,7 +122,6 @@ def list_repairs(
     user_id = current_user.id if current_user else None
     jobs = repo_db.list_repairs(user_id=user_id, limit=50)
 
-    # Return list matching both v1 schema and existing frontend expected format
     return [
         {
             "id": j.id,

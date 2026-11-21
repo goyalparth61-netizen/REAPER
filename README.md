@@ -244,15 +244,17 @@ npm run build
 
 ## 🗺️ Project Implementation Status
 
-- [x] Multi-Agent Repair Architecture (6 specialized agents)
-- [x] 10-Stage Deterministic Repair State Machine
+- [x] Multi-Agent Autonomous Repair Architecture (Detection, Diagnosis, Repair, Verification, Reporting Agents)
+- [x] Google Gemini 3.5 Flash Integration via `GEMINI_API_KEY` for semantic diagnosis and surgical patch synthesis
+- [x] Deterministic 10-Stage Repair State Machine Orchestrator
+- [x] Hermetic Docker Sandbox with Host Protection (refuses uncontainerized host execution)
+- [x] Local Project Archive Ingestion (`POST /api/v1/repairs/upload`) with path traversal and zip bomb defense
 - [x] Dual-Token JWT Authentication & Argon2 Password Hashing
-- [x] PostgreSQL & SQLAlchemy 2.0 ORM with Alembic Migrations
-- [x] Docker Containerized Sandbox Runner & Fallback Subprocess Runner
+- [x] PostgreSQL & SQLAlchemy 2.0 ORM with Alembic Migrations and explicit SQLite local development fallback
 - [x] Obsidian Emerald UI Design System & Live Animated Mascot
-- [x] RESTful API endpoints & WebSocket Telemetry Stream
-- [x] Comprehensive Automated Pytest Suite (17 tests passing)
-- [x] Mock GitHub Integration Service
+- [x] Documented RESTful API endpoints & Live Agent Telemetry Stream
+- [x] Automated Pytest Suite (**19 passed tests**)
+- [x] Production Deployment Preparation Guide for Vercel, Render, and Supabase
 
 ---
 

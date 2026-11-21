@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, Request, Header
+from fastapi import FastAPI, Depends, Request, Header, UploadFile, File, Form, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import RequestValidationError
@@ -9,13 +9,28 @@ from typing import Optional, List, Dict, Any
 from app.core.config import settings
 from app.core.logging import logger
 from app.database.session import init_db, get_db
-from app.middleware.audit_middleware import AuditLoggingMiddleware
 from app.middleware.error_handler import (
     http_exception_handler,
     validation_exception_handler,
     general_exception_handler
 )
 from app.api.v1.api import api_v1_router
+from app.api.v1.endpoints.repairs import (
+    create_repair,
+    list_repairs,
+    get_repair,
+    get_repair_report,
+    get_repair_logs,
+    stop_repair,
+    upload_project_archive
+)
+from app.api.v1.endpoints.repositories import (
+    list_repositories,
+    create_repository,
+    get_repository,
+    delete_repository
+)
+from app.api.v1.endpoints.system import agents_status, status_endpoint
 from app.repositories.repair_repo import RepairRepository
 from app.tasks.repair_tasks import trigger_repair_execution
 from app.services.auth_service import AuthService
@@ -27,15 +42,15 @@ from app.schemas.auth import (
     ForgotPasswordRequest,
     ResetPasswordRequest
 )
+from app.schemas.repair import RepairCreateRequest
+from app.schemas.repository import RepositoryCreateRequest
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Initialize DB models and seed demo user
     logger.info("Starting REAPER Autonomous Software Repair Engine...")
     init_db()
     yield
-    # Shutdown
     logger.info("Stopping REAPER engine cleanly.")
 
 
@@ -53,7 +68,7 @@ app.add_exception_handler(StarletteHTTPException, http_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, general_exception_handler)
 
-# Middlewares
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -61,9 +76,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.add_middleware(AuditLoggingMiddleware)
 
-# Mount Versioned API (v1)
+# Mount Versioned API (/api/v1)
 app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 
 
@@ -75,13 +89,14 @@ app.include_router(api_v1_router, prefix=settings.API_V1_STR)
 def root():
     return {
         "project": "REAPER",
+        "tagline": "Detect. Diagnose. Repair. Verify.",
         "team": "CiPher",
         "engine": "Autonomous Software Repair Engine",
         "version": settings.VERSION,
         "status": "online",
         "api_v1": "/api/v1",
         "docs": "/docs",
-        "auth_engine": "Argon2 + JWT Access/Refresh",
+        "auth_engine": "Argon2 + JWT Dual-Token (Access/Refresh)",
         "mission": "Engineering autonomous software repair."
     }
 
@@ -93,27 +108,66 @@ def api_health():
         "status": "healthy",
         "auth": "ready",
         "engine": "REAPER",
+        "version": settings.VERSION,
         "time": time.time()
     }
 
 
 # ============================================================================
-# Legacy & Frontend Direct Endpoints (/api/*)
-# Kept for 100% seamless compatibility with existing frontend components
+# Canonical Direct Endpoints (/api/*)
+# Directly consistent with Section 10 of project specifications
+# ============================================================================
+
+@app.get("/api/agents/status")
+def direct_agents_status(db: Session = Depends(get_db)):
+    return agents_status(db=db)
+
+
+@app.post("/api/repairs")
+def direct_create_repair(
+    req: RepairCreateRequest,
+    db: Session = Depends(get_db)
+):
+    return create_repair(req=req, current_user=None, db=db)
+
+
+@app.get("/api/repairs")
+def direct_list_repairs(db: Session = Depends(get_db)):
+    return list_repairs(current_user=None, db=db)
+
+
+@app.get("/api/repairs/{task_id}")
+def direct_get_repair(task_id: str, db: Session = Depends(get_db)):
+    return get_repair(repair_id=task_id, db=db)
+
+
+@app.get("/api/repairs/{task_id}/report")
+def direct_get_repair_report(task_id: str, db: Session = Depends(get_db)):
+    return get_repair_report(repair_id=task_id, db=db)
+
+
+@app.get("/api/repositories")
+def direct_list_repositories(db: Session = Depends(get_db)):
+    return list_repositories(current_user=None, db=db)
+
+
+@app.post("/api/repositories", status_code=status.HTTP_201_CREATED)
+def direct_create_repository(req: RepositoryCreateRequest, db: Session = Depends(get_db)):
+    return create_repository(req=req, current_user=None, db=db)
+
+
+@app.delete("/api/repositories/{repository_id}")
+def direct_delete_repository(repository_id: str, db: Session = Depends(get_db)):
+    return delete_repository(repository_id=repository_id, db=db)
+
+
+# ============================================================================
+# Frontend Direct Compatibility Endpoints (/api/status, /api/runs, /api/repair)
 # ============================================================================
 
 @app.get("/api/status")
 def api_status_legacy(db: Session = Depends(get_db)):
-    from app.models.repair import RepairJob
-    active_count = db.query(RepairJob).filter(
-        RepairJob.status.in_(["RECEIVED", "VALIDATING", "INVESTIGATING", "REPRODUCING", "DIAGNOSING", "PATCHING", "POLICY_CHECK", "TESTING", "RETRYING", "CREATING_PR"])
-    ).count()
-
-    return {
-        "agent": "REAPER",
-        "state": "BUSY" if active_count > 0 else "IDLE",
-        "active_tasks": active_count
-    }
+    return status_endpoint(db=db)
 
 
 @app.get("/api/runs")
@@ -137,36 +191,23 @@ def api_runs_legacy(db: Session = Depends(get_db)):
     }
 
 
-class LegacyRepairRequest:
-    pass
-
-
 @app.post("/api/repair")
 async def api_repair_legacy(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
     repo_name = data.get("repo", "reaper-engine/payment-gateway")
     branch = data.get("branch", "main")
     issue = data.get("issue", "")
+    failure_logs = data.get("failure_logs", issue)
     is_demo = bool(data.get("isDemo", False))
 
-    repo_db = RepairRepository(db)
-    job = repo_db.create_repair(
-        repo_name=repo_name,
+    req = RepairCreateRequest(
+        repo=repo_name,
         branch=branch,
-        issue_description=issue,
-        user_id="usr-demo-01",
-        is_demo=is_demo
+        issue=issue,
+        failure_logs=failure_logs,
+        isDemo=is_demo
     )
-    trigger_repair_execution(job.id)
-
-    return {
-        "runId": job.id,
-        "status": "DISPATCHED",
-        "repo": job.repo_name,
-        "branch": job.branch,
-        "stage": "ANALYSING",
-        "message": "Autonomous repair agent initialized in isolated environment."
-    }
+    return create_repair(req=req, current_user=None, db=db)
 
 
 # Auth Legacy Endpoints

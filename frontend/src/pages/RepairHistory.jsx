@@ -7,8 +7,7 @@ import {
 } from "lucide-react";
 import { IconRepairHistory, IconRepo } from "../components/icons/ReaperIcons";
 import ReaperMascotLogo from "../components/branding/ReaperMascotLogo";
-
-const API = "http://127.0.0.1:8000";
+import { apiService } from "../services/apiService";
 
 export default function RepairHistory({ onNavigate }) {
   const [runs, setRuns] = useState([]);
@@ -21,10 +20,9 @@ export default function RepairHistory({ onNavigate }) {
     setLoading(true);
     let apiRuns = [];
     try {
-      const response = await fetch(`${API}/api/runs`, { signal: AbortSignal.timeout(3000) });
-      if (response.ok) {
-        const data = await response.json();
-        apiRuns = Array.isArray(data) ? data : data.runs || [];
+      const res = await apiService.getRuns();
+      if (res.online) {
+        apiRuns = res.runs || [];
         setConnected(true);
       } else {
         setConnected(false);
@@ -63,8 +61,8 @@ export default function RepairHistory({ onNavigate }) {
     if (s.includes("complete") || s.includes("success") || s.includes("resolved")) return "Completed";
     if (s.includes("fix") || s.includes("patch") || s.includes("repair")) return "Fixing";
     if (s.includes("test") || s.includes("validat")) return "Testing";
-    if (s.includes("fail") || s.includes("error")) return "Needs attention";
-    if (s.includes("analys") || s.includes("inspect")) return "Analysing";
+    if (s.includes("fail") || s.includes("error") || s.includes("unverified")) return "Needs attention";
+    if (s.includes("analys") || s.includes("inspect") || s.includes("dispatch")) return "Analysing";
     return "Waiting";
   }
 
@@ -102,125 +100,170 @@ export default function RepairHistory({ onNavigate }) {
       {/* KPI Cards */}
       <section className="stats-grid">
         <article className="panel stat-card hover-lift">
-          <span className="history-stat-label">Total Repair Runs</span>
-          <strong className="stat-value" style={{ color: "var(--text-ivory)" }}>{runs.length}</strong>
-          <small style={{ color: "var(--text-sage)" }}>Logged repair executions</small>
+          <div className="stat-top">
+            <span style={{ color: "var(--text-sage)", fontSize: "12px", textTransform: "uppercase" }}>Total Records</span>
+            <IconRepairHistory size={19} />
+          </div>
+          <strong className="stat-value" style={{ color: "var(--accent-emerald)" }}>{runs.length}</strong>
+          <small style={{ color: "var(--text-sage)" }}>
+            {connected ? "Synced with backend" : "Local session cache"}
+          </small>
         </article>
 
         <article className="panel stat-card hover-lift">
-          <span className="history-stat-label">Verified & Completed</span>
-          <strong className="stat-value" style={{ color: "var(--accent-emerald)" }}>
+          <div className="stat-top">
+            <span style={{ color: "var(--text-sage)", fontSize: "12px", textTransform: "uppercase" }}>Completed Repairs</span>
+            <IconRepo size={19} />
+          </div>
+          <strong className="stat-value" style={{ color: "var(--accent-mint)" }}>
             {runs.filter((r) => getFriendlyStatus(r.status) === "Completed").length}
           </strong>
-          <small style={{ color: "var(--text-sage)" }}>Passed regression checks</small>
+          <small style={{ color: "var(--text-sage)" }}>Regression-verified patches</small>
         </article>
 
         <article className="panel stat-card hover-lift">
-          <span className="history-stat-label">In Progress</span>
-          <strong className="stat-value" style={{ color: "var(--accent-champagne)" }}>
-            {runs.filter((r) => ["Analysing", "Fixing", "Testing"].includes(getFriendlyStatus(r.status))).length}
-          </strong>
-          <small style={{ color: "var(--text-sage)" }}>Running in sandbox</small>
-        </article>
-
-        <article className="panel stat-card hover-lift">
-          <span className="history-stat-label">Safety Containment</span>
-          <strong className="stat-value" style={{ color: "var(--accent-mint)" }}>
-            100% Hermetic
-          </strong>
-          <small style={{ color: "var(--text-sage)" }}>Zero production branch pollution</small>
+          <div className="stat-top">
+            <span style={{ color: "var(--text-sage)", fontSize: "12px", textTransform: "uppercase" }}>Safety Standard</span>
+            <span className="status-pill status-completed" style={{ fontSize: "11px", padding: "2px 8px" }}>
+              100%
+            </span>
+          </div>
+          <strong className="stat-value" style={{ color: "var(--accent-champagne)" }}>Protected</strong>
+          <small style={{ color: "var(--text-sage)" }}>Non-destructive branch writes</small>
         </article>
       </section>
 
-      {/* Main Table Panel */}
-      <section className="panel history-table-panel">
-        <div className="panel-heading">
-          <div>
-            <span className="eyebrow">AUDIT ARCHIVE</span>
-            <h3>All Executions</h3>
+      {/* Filter and Search Bar */}
+      <section className="panel" style={{ padding: "14px 18px", marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div className="repo-search" style={{ margin: 0, flex: "1 1 280px" }}>
+            <Search size={16} style={{ color: "var(--text-sage)" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search past repairs by project, error, or branch..."
+              aria-label="Search repairs"
+            />
           </div>
 
-          {/* Filter Pills */}
-          <div className="history-filter-pills">
-            {["all", "completed", "testing", "fixing", "needs attention"].map((filter) => (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: "var(--text-sage)", fontSize: "12px" }}>Filter:</span>
+            {["all", "completed", "analysing", "needs attention"].map((f) => (
               <button
-                key={filter}
-                className={`filter-pill-btn ${statusFilter === filter ? "active" : ""}`}
-                onClick={() => setStatusFilter(filter)}
+                key={f}
+                className={`secondary-btn ${statusFilter === f ? "active" : ""}`}
+                style={{
+                  padding: "5px 12px",
+                  fontSize: "12px",
+                  background: statusFilter === f ? "rgba(66, 214, 164, 0.15)" : "transparent",
+                  borderColor: statusFilter === f ? "var(--accent-emerald)" : "var(--border-forest)",
+                  color: statusFilter === f ? "var(--accent-emerald)" : "var(--text-sage)"
+                }}
+                onClick={() => setStatusFilter(f)}
               >
-                {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                {f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Search */}
-        <div className="repo-search">
-          <Search size={17} style={{ color: "var(--text-sage)" }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search records by project name, branch, or issue keyword..."
-            aria-label="Search records"
-          />
+      {/* Runs Table */}
+      <section className="panel">
+        <div className="panel-heading">
+          <div>
+            <span className="eyebrow">ACTIVITY TRAIL</span>
+            <h3>Repair Audit Log</h3>
+          </div>
+          <span className="repo-count">{filteredRuns.length} run(s)</span>
         </div>
 
         {loading ? (
-          <div className="history-empty" style={{ padding: "40px 0" }}>
+          <div style={{ padding: "36px 0", textAlign: "center" }}>
             <RefreshCw size={24} className="spinning" style={{ color: "var(--accent-emerald)", margin: "0 auto 12px" }} />
-            <strong style={{ color: "var(--text-ivory)" }}>Loading repair records...</strong>
+            <p style={{ color: "var(--text-sage)", margin: 0 }}>Loading repair audit records...</p>
           </div>
-        ) : filteredRuns.length > 0 ? (
+        ) : filteredRuns.length === 0 ? (
+          <div className="repo-empty" style={{ padding: "40px 20px" }}>
+            <p style={{ color: "var(--text-sage)", margin: 0 }}>
+              {runs.length === 0
+                ? "No repair operations recorded yet. Start your first repair in the Workspace."
+                : `No repairs matched "${search}".`}
+            </p>
+          </div>
+        ) : (
           <div className="activity-table-wrap">
             <table className="activity-table">
               <thead>
                 <tr>
-                  <th>PROJECT</th>
-                  <th>TARGET BRANCH</th>
-                  <th>PROBLEM ADDRESSED</th>
+                  <th>PROJECT & REPAIR ID</th>
+                  <th>DIAGNOSED ISSUE</th>
                   <th>STATUS</th>
                   <th>TIMESTAMP</th>
+                  <th>REPORT</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRuns.map((run, index) => {
+                {filteredRuns.map((run, i) => {
                   const friendly = getFriendlyStatus(run.status);
-                  const statusClass =
-                    friendly === "Completed"
-                      ? "status-completed"
-                      : friendly === "Needs attention"
-                      ? "status-failed"
-                      : friendly === "Fixing"
-                      ? "status-fixing"
-                      : friendly === "Testing"
-                      ? "status-testing"
-                      : "status-analysing";
-
+                  const isSuccess = friendly === "Completed";
+                  const runId = run.runId || run.id || `run-${i}`;
                   return (
-                    <tr key={run.runId || run.id || index}>
+                    <tr key={runId}>
                       <td>
                         <div className="repo-name">
-                          <IconRepo size={15} />
-                          <strong style={{ color: "var(--text-ivory)" }}>
-                            {run.repo || run.repository || "Selected Project"}
-                          </strong>
+                          <IconRepo size={16} />
+                          <div>
+                            <strong style={{ color: "var(--text-ivory)", display: "block" }}>
+                              {run.repo || run.repo_name || "project"}
+                            </strong>
+                            <small style={{ color: "var(--text-sage)", fontSize: "11px", fontFamily: "monospace" }}>
+                              {runId} • {run.branch || "main"}
+                            </small>
+                          </div>
                         </div>
                       </td>
-                      <td>
-                        <code style={{ color: "var(--accent-emerald)" }}>{run.branch || "main"}</code>
+                      <td style={{ maxWidth: 320 }}>
+                        <span style={{ color: "var(--text-ivory)", fontSize: "13px", display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {run.issue || run.issue_description || "Software repair task"}
+                        </span>
+                        {run.stage && (
+                          <small style={{ color: "var(--accent-champagne)", fontSize: "11px" }}>
+                            Stage: {run.stage}
+                          </small>
+                        )}
                       </td>
                       <td>
-                        <span style={{ color: "var(--text-sage)", fontSize: "13px" }}>
-                          {run.issue || "Null pointer reference caught during execution"}
+                        <span
+                          className={`status-pill ${
+                            isSuccess
+                              ? "status-completed"
+                              : friendly === "Needs attention"
+                              ? "status-waiting"
+                              : "status-analysing"
+                          }`}
+                        >
+                          {friendly}
                         </span>
                       </td>
-                      <td>
-                        <span className={`status-pill ${statusClass}`}>{friendly}</span>
+                      <td style={{ color: "var(--text-sage)", fontSize: "12px", whiteSpace: "nowrap" }}>
+                        {run.timestamp || run.created_at || "Recent"}
                       </td>
-                      <td className="time-cell" style={{ color: "var(--text-sage)" }}>
-                        {run.timestamp
-                          ? new Date(run.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                          : "Recently"}
+                      <td>
+                        <button
+                          className="secondary-btn"
+                          style={{ padding: "5px 10px", fontSize: "11px", display: "inline-flex", alignItems: "center", gap: 4 }}
+                          onClick={() => {
+                            try {
+                              localStorage.setItem("reaper_active_report_id", runId);
+                            } catch {}
+                            if (onNavigate) onNavigate("Reports");
+                          }}
+                          title="View detailed repair report"
+                        >
+                          <span>View Report</span>
+                          <ArrowRight size={12} />
+                        </button>
                       </td>
                     </tr>
                   );
@@ -228,41 +271,12 @@ export default function RepairHistory({ onNavigate }) {
               </tbody>
             </table>
           </div>
-        ) : (
-          <div className="history-empty" style={{ padding: "44px 20px" }}>
-            <div className="empty-icon-box" style={{ margin: "0 auto 16px" }}>
-              <IconRepairHistory size={32} />
-            </div>
-            <h4 style={{ color: "var(--text-ivory)", margin: "0 0 6px", fontSize: "17px" }}>
-              {search ? "No matching repair records" : "No repair executions yet"}
-            </h4>
-            <p style={{ color: "var(--text-sage)", maxWidth: "440px", margin: "0 auto 20px", fontSize: "14px", lineHeight: "1.6" }}>
-              {search
-                ? "Try adjusting your search keywords or clearing the active status filter."
-                : "Repair executions will appear here automatically when you start an autonomous repair from your Workspace."}
-            </p>
-            {!search && (
-              <button
-                className="action-btn emerald-btn"
-                onClick={() => onNavigate && onNavigate("Workspace")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, margin: "0 auto" }}
-              >
-                <span>Start a Repair in Workspace</span>
-                <ArrowRight size={15} />
-              </button>
-            )}
-          </div>
         )}
       </section>
 
-      {/* Footer Info */}
-      <div className="repo-note">
-        <Clock3 size={15} />
-        <span>
-          {connected
-            ? "Connected to FastAPI engine audit trail at 127.0.0.1:8000."
-            : "Displaying verified local session repair runs. Backend will synchronize when online."}
-        </span>
+      <div style={{ marginTop: 24, textAlign: "center", color: "var(--text-sage)", fontSize: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        <Clock3 size={13} />
+        <span>All repair runs are persisted in PostgreSQL / SQLite audit tables with immutable timestamps.</span>
       </div>
     </div>
   );

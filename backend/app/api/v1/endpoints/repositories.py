@@ -18,8 +18,6 @@ def list_repositories(
     db: Session = Depends(get_db)
 ):
     repo_db = RepositoryRepository(db)
-    
-    # Check if any user repositories exist in DB
     user_id = current_user.id if current_user else None
     repos = repo_db.list_by_user(user_id) if user_id else repo_db.list_all()
 
@@ -40,6 +38,28 @@ def list_repositories(
             repos.append(created)
 
     return repos
+
+
+@router.post("", response_model=RepositoryResponse, status_code=status.HTTP_201_CREATED)
+def create_repository(
+    req: RepositoryCreateRequest,
+    current_user: User = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    repo_db = RepositoryRepository(db)
+    user_id = current_user.id if current_user else "usr-demo-01"
+
+    created = repo_db.create(
+        user_id=user_id,
+        name=req.name,
+        owner=req.owner,
+        default_branch=req.default_branch or "main",
+        language=req.language or "Python",
+        description=req.description,
+        is_private=bool(req.is_private),
+        is_demo=bool(req.is_demo)
+    )
+    return created
 
 
 @router.get("/{repository_id}", response_model=RepositoryResponse)
